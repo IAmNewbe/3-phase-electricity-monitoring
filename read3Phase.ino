@@ -143,7 +143,36 @@ void Read3PhasePzem(){
     var_3 = power_3 / pf_3 * sqrt(1-sq(pf_3));
   }
 
-  voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+  if ((voltage > 0) && (voltage_2 > 0) && (voltage_3 > 0)) {
+    voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+  } else {
+      if ((voltage == 0 || isnan(voltage)) && (voltage_2 > 0) && (voltage_3 > 0)) {
+        voltage = 0;
+        voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+     }
+      if ((voltage > 0) && (voltage_2 == 0 || isnan(voltage_2)) && (voltage_3 > 0)) {
+        voltage_2 = 0;
+        voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+     }
+      if ((voltage > 0) && (voltage_2 > 0) && (voltage_3 == 0 || isnan(voltage_3))) {
+        voltage_3 = 0;
+        voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+     }
+      if ((voltage > 0) && (voltage_2 == 0 || isnan(voltage_2)) && (voltage_3 == 0 || isnan(voltage_3))) {
+        voltage3ph = voltage;
+     }
+     if ((voltage == 0 || isnan(voltage)) && (voltage_2 > 0) && (voltage_3 == 0 || isnan(voltage_3))) {
+        voltage3ph = voltage_2;
+     }
+     if ((voltage == 0 || isnan(voltage)) && (voltage_2 == 0 || isnan(voltage_2)) && (voltage_3 > 0)) {
+        voltage3ph = voltage_3;
+     }
+     if ((voltage == 0 || isnan(voltage)) && (voltage_2 == 0 || isnan(voltage_2)) && (voltage_3 == 0 || isnan(voltage_3))) {
+        voltage3ph = 0;
+     }
+  }
+
+  // voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
  
   if ((current > 0) && (current_2 > 0) && (current_3 > 0)) {
   current3ph = 1/3 * (current+current_2+current_3);
@@ -171,10 +200,123 @@ void Read3PhasePzem(){
      }
   }
 
-  power3ph = (power + power_2 + power_3);
-  energy3ph = (energy + energy_2 + energy_3);
-  va3ph = (va + va_2 + va_3);
-  var3ph = (var + var_2 + var_3);
+  if ((power > 0) && (power_2 > 0) && (power_3 > 0)) {
+    power3ph = (power + power_2 + power_3);
+  } else {
+      if ((power == 0 || isnan(power)) && (power_2 > 0) && (power_3 > 0)) {
+        power = 0;
+        power3ph = (power + power_2 + power_3);
+     }
+      if ((power > 0) && (power_2 == 0 || isnan(power_2)) && (power_3 > 0)) {
+        power_2 = 0;
+        power3ph = (power + power_2 + power_3);
+     }
+      if ((power > 0) && (power_2 > 0) && (power_3 == 0 || isnan(power_3))) {
+        power_3 = 0;
+        power3ph = (power + power_2 + power_3);
+     }
+      if ((power > 0) && (power_2 == 0 || isnan(power_2)) && (power_3 == 0 || isnan(power_3))) {
+        power3ph = power;
+     }
+     if ((power == 0 || isnan(power)) && (power_2 > 0) && (power_3 == 0 || isnan(power_3))) {
+        power3ph = power_2;
+     }
+     if ((power == 0 || isnan(power)) && (power_2 == 0 || isnan(power_2)) && (power_3 > 0)) {
+        power3ph = power_3;
+     }
+     if ((power == 0 || isnan(power)) && (power_2 == 0 || isnan(power_2)) && (power_3 == 0 || isnan(power_3))) {
+        power3ph = 0;
+     }
+  }
+
+  // power3ph = (power + power_2 + power_3);
+  if ((energy > 0) && (energy_2 > 0) && (energy_3 > 0)) {
+    energy3ph = (energy + energy_2 + energy_3);
+  } else {
+      if ((energy == 0 || isnan(energy)) && (energy_2 > 0) && (energy_3 > 0)) {
+        energy = 0;
+        energy3ph = (energy + energy_2 + energy_3);
+     }
+      if ((energy > 0) && (energy_2 == 0 || isnan(energy_2)) && (energy_3 > 0)) {
+        energy_2 = 0;
+        energy3ph = (energy + energy_2 + energy_3);
+     }
+      if ((energy > 0) && (energy_2 > 0) && (energy_3 == 0 || isnan(energy_3))) {
+        energy_3 = 0;
+        energy3ph = (energy + energy_2 + energy_3);
+     }
+      if ((energy > 0) && (energy_2 == 0 || isnan(energy_2)) && (energy_3 == 0 || isnan(energy_3))) {
+        energy3ph = energy;
+     }
+     if ((energy == 0 || isnan(energy)) && (energy_2 > 0) && (energy_3 == 0 || isnan(energy_3))) {
+        energy3ph = energy_2;
+     }
+     if ((energy == 0 || isnan(energy)) && (energy_2 == 0 || isnan(energy_2)) && (energy_3 > 0)) {
+        energy3ph = energy_3;
+     }
+     if ((energy == 0 || isnan(energy)) && (energy_2 == 0 || isnan(energy_2)) && (energy_3 == 0 || isnan(energy_3))) {
+        energy3ph = 0;
+     }
+  }
+  // energy3ph = (energy + energy_2 + energy_3);
+  if ((va > 0) && (va_2 > 0) && (va_3 > 0)) {
+    va3ph = (va + va_2 + va_3);
+  } else {
+      if ((va == 0 || isnan(va)) && (va_2 > 0) && (va_3 > 0)) {
+        va = 0;
+        va3ph = (va + va_2 + va_3);
+     }
+      if ((va > 0) && (va_2 == 0 || isnan(va_2)) && (va_3 > 0)) {
+        va_2 = 0;
+        va3ph = (va + va_2 + va_3);
+     }
+      if ((va > 0) && (va_2 > 0) && (va_3 == 0 || isnan(va_3))) {
+        va_3 = 0;
+        va3ph = (va + va_2 + va_3);
+     }
+      if ((va > 0) && (va_2 == 0 || isnan(va_2)) && (va_3 == 0 || isnan(va_3))) {
+        va3ph = va;
+     }
+     if ((va == 0 || isnan(va)) && (va_2 > 0) && (va_3 == 0 || isnan(va_3))) {
+        va3ph = va_2;
+     }
+     if ((va == 0 || isnan(va)) && (va_2 == 0 || isnan(va_2)) && (va_3 > 0)) {
+        va3ph = va_3;
+     }
+     if ((va == 0 || isnan(va)) && (va_2 == 0 || isnan(va_2)) && (va_3 == 0 || isnan(va_3))) {
+        va3ph = 0;
+     }
+  }
+  // va3ph = (va + va_2 + va_3);
+  if ((var > 0) && (var_2 > 0) && (var_3 > 0)) {
+    var3ph = (var + var_2 + var_3);
+  } else {
+      if ((var == 0 || isnan(var)) && (var_2 > 0) && (var_3 > 0)) {
+        var = 0;
+        var3ph = (var + var_2 + var_3);
+     }
+      if ((var > 0) && (var_2 == 0 || isnan(var_2)) && (var_3 > 0)) {
+        var_2 = 0;
+        var3ph = (var + var_2 + var_3);
+     }
+      if ((var > 0) && (var_2 > 0) && (var_3 == 0 || isnan(var_3))) {
+        var_3 = 0;
+        var3ph = (var + var_2 + var_3);
+     }
+      if ((var > 0) && (var_2 == 0 || isnan(var_2)) && (var_3 == 0 || isnan(var_3))) {
+        var3ph = var;
+     }
+     if ((var == 0 || isnan(var)) && (var_2 > 0) && (var_3 == 0 || isnan(var_3))) {
+        var3ph = var_2;
+     }
+     if ((var == 0 || isnan(var)) && (var_2 == 0 || isnan(var_2)) && (var_3 > 0)) {
+        var3ph = var_3;
+     }
+     if ((var == 0 || isnan(var)) && (var_2 == 0 || isnan(var_2)) && (var_3 == 0 || isnan(var_3))) {
+        var3ph = 0;
+     }
+  }
+  // var3ph = (var + var_2 + var_3);
 
   if ((frequency > 0) && (frequency_2 > 0) && (frequency_3 > 0)) {
   frequency3ph = 1/3 * (frequency + frequency_2 + frequency_3);
