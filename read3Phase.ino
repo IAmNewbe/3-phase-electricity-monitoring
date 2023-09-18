@@ -15,6 +15,7 @@
 
 #define NUM_PZEMS 3
 
+
 PZEM004Tv30 pzems[NUM_PZEMS];
 
 /* ***************************************************************
@@ -42,7 +43,7 @@ SoftwareSerial pzemSWSerial(PZEM_RX_PIN, PZEM_TX_PIN);
 #define WIFI_AP "crustea" //gresik
 #define WIFI_PASSWORD "12345678"
 
-#define TOKEN "TIGA_FASA_ACCESS_TOKEN"
+#define TOKEN "SG1tAxWUe3kLYLKXF0LG"
 //#define TOKEN "uTHDviq2md1SZOKaCoX0"
 
 #define GPIO23 23 //relay Pin 
@@ -50,6 +51,10 @@ SoftwareSerial pzemSWSerial(PZEM_RX_PIN, PZEM_TX_PIN);
 
 #define GPIO23_PIN 14
 //#define GPIO2_PIN 5
+
+PZEM004Tv30 pzem1(PZEM_SERIAL, PZEM_RX_PIN, PZEM_TX_PIN  , 0x10);
+PZEM004Tv30 pzem2(PZEM_SERIAL, PZEM_RX_PIN, PZEM_TX_PIN  , 0x11);
+PZEM004Tv30 pzem3(PZEM_SERIAL, PZEM_RX_PIN, PZEM_TX_PIN  , 0x12);
 
 char thingsboardServer[] = "18.140.254.213";
 //char thingsboardServer[] = "thingsboard.cloud";
@@ -72,13 +77,351 @@ float voltage_2, current_2, power_2, energy_2, frequency_2, pf_2, va_2, var_2;
 float voltage_3, current_3, power_3, energy_3, frequency_3, pf_3, va_3, var_3;
 float voltage3ph, current3ph, power3ph, energy3ph, frequency3ph, pf3ph, va3ph, var3ph;
 
+void Read3PhasePzem(){
+  /**
+   * Fungsi untuk mendebug(menampilakan pada serial monitor) nilai-nilai yang didapatkan dari vaiabel yang diolah pada fungsi pzemRead.
+   */
+  
+  voltage = pzem1.voltage();
+  current = pzem1.current();
+  power = pzem1.power();
+  energy = pzem1.frequency();
+  frequency = pzem1.frequency();
+  pf = pzem1.pf();
+
+  // voltage = 230;
+  // current = 0.2;
+  // power = 34;
+  // energy = 50;
+  // frequency = 50;
+  // pf = 0.68;
+
+  if (pf == 0 || isnan(pf)) {
+  va = 0;
+  } else {
+    va = power / pf;
+  }
+  if (pf == 0 || isnan(pf)) {
+    var = 0;
+  } else {
+    var = power / pf * sqrt(1-sq(pf));
+  }
+
+  voltage_2 = pzem2.voltage();
+  current_2 = pzem2.current();
+  power_2 = pzem2.power();
+  energy_2 = pzem2.frequency();
+  frequency_2 = pzem2.frequency();
+  pf_2 = pzem2.pf();
+
+  if (pf_2 == 0 || isnan(pf_2)) {
+  va_2 = 0;
+  } else {
+    va_2 = power_2 / pf_2;
+  }
+  if (pf_2 == 0 || isnan(pf_2)) {
+    var_2 = 0;
+  } else {
+    var_2 = power_2 / pf_2 * sqrt(1-sq(pf_2));
+  }
+
+  voltage_3 = pzem3.voltage();
+  current_3 = pzem3.current();
+  power_3 = pzem3.power();
+  energy_3 = pzem3.frequency();
+  frequency_3 = pzem3.frequency();
+  pf_3 = pzem3.pf();
+
+  if (pf_3 == 0 || isnan(pf_3)) {
+  va_3 = 0;
+  } else {
+    va_3 = power_3 / pf_3;
+  }
+  if (pf_3 == 0 || isnan(pf_3)) {
+    var_3 = 0;
+  } else {
+    var_3 = power_3 / pf_3 * sqrt(1-sq(pf_3));
+  }
+
+  if ((voltage > 0) && (voltage_2 > 0) && (voltage_3 > 0)) {
+    voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+  } else {
+      if ((voltage == 0 || isnan(voltage)) && (voltage_2 > 0) && (voltage_3 > 0)) {
+        voltage = 0;
+        voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+     }
+      if ((voltage > 0) && (voltage_2 == 0 || isnan(voltage_2)) && (voltage_3 > 0)) {
+        voltage_2 = 0;
+        voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+     }
+      if ((voltage > 0) && (voltage_2 > 0) && (voltage_3 == 0 || isnan(voltage_3))) {
+        voltage_3 = 0;
+        voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+     }
+      if ((voltage > 0) && (voltage_2 == 0 || isnan(voltage_2)) && (voltage_3 == 0 || isnan(voltage_3))) {
+        voltage3ph = voltage;
+     }
+     if ((voltage == 0 || isnan(voltage)) && (voltage_2 > 0) && (voltage_3 == 0 || isnan(voltage_3))) {
+        voltage3ph = voltage_2;
+     }
+     if ((voltage == 0 || isnan(voltage)) && (voltage_2 == 0 || isnan(voltage_2)) && (voltage_3 > 0)) {
+        voltage3ph = voltage_3;
+     }
+     if ((voltage == 0 || isnan(voltage)) && (voltage_2 == 0 || isnan(voltage_2)) && (voltage_3 == 0 || isnan(voltage_3))) {
+        voltage3ph = 0;
+     }
+  }
+
+  // voltage3ph = sqrt(sq(voltage) + sq(voltage_2) + sq(voltage_3));
+ 
+  if ((current > 0) && (current_2 > 0) && (current_3 > 0)) {
+  current3ph = 1/3 * (current+current_2+current_3);
+  } else {
+      if ((current == 0 || isnan(current)) && (current_2 > 0) && (current_3 > 0)) {
+      current3ph = 1/2 * (current_2+current_3);
+     }
+      if ((current > 0) && (current_2 == 0 || isnan(current_2)) && (current_3 > 0)) {
+      current3ph = 1/2 * (current+current_3);
+     }
+      if ((current > 0) && (current_2 > 0) && (current_3 == 0 || isnan(current_3))) {
+      current3ph = 1/2 * (current+current_2);
+     }
+      if ((current > 0) && (current_2 == 0 || isnan(current_2)) && (current_3 == 0 || isnan(current_3))) {
+      current3ph = current;
+     }
+     if ((current == 0 || isnan(current)) && (current_2 > 0) && (current_3 == 0 || isnan(current_3))) {
+      current3ph = current_2;
+     }
+     if ((current == 0 || isnan(current)) && (current_2 == 0 || isnan(current_2)) && (current_3 > 0)) {
+      current3ph = current_3;
+     }
+     if ((current == 0 || isnan(current)) && (current_2 == 0 || isnan(current_2)) && (current_3 == 0 || isnan(current_3))) {
+      current3ph = 0;
+     }
+  }
+
+  if ((power > 0) && (power_2 > 0) && (power_3 > 0)) {
+    power3ph = (power + power_2 + power_3);
+  } else {
+      if ((power == 0 || isnan(power)) && (power_2 > 0) && (power_3 > 0)) {
+        power = 0;
+        power3ph = (power + power_2 + power_3);
+     }
+      if ((power > 0) && (power_2 == 0 || isnan(power_2)) && (power_3 > 0)) {
+        power_2 = 0;
+        power3ph = (power + power_2 + power_3);
+     }
+      if ((power > 0) && (power_2 > 0) && (power_3 == 0 || isnan(power_3))) {
+        power_3 = 0;
+        power3ph = (power + power_2 + power_3);
+     }
+      if ((power > 0) && (power_2 == 0 || isnan(power_2)) && (power_3 == 0 || isnan(power_3))) {
+        power3ph = power;
+     }
+     if ((power == 0 || isnan(power)) && (power_2 > 0) && (power_3 == 0 || isnan(power_3))) {
+        power3ph = power_2;
+     }
+     if ((power == 0 || isnan(power)) && (power_2 == 0 || isnan(power_2)) && (power_3 > 0)) {
+        power3ph = power_3;
+     }
+     if ((power == 0 || isnan(power)) && (power_2 == 0 || isnan(power_2)) && (power_3 == 0 || isnan(power_3))) {
+        power3ph = 0;
+     }
+  }
+
+  // power3ph = (power + power_2 + power_3);
+  if ((energy > 0) && (energy_2 > 0) && (energy_3 > 0)) {
+    energy3ph = (energy + energy_2 + energy_3);
+  } else {
+      if ((energy == 0 || isnan(energy)) && (energy_2 > 0) && (energy_3 > 0)) {
+        energy = 0;
+        energy3ph = (energy + energy_2 + energy_3);
+     }
+      if ((energy > 0) && (energy_2 == 0 || isnan(energy_2)) && (energy_3 > 0)) {
+        energy_2 = 0;
+        energy3ph = (energy + energy_2 + energy_3);
+     }
+      if ((energy > 0) && (energy_2 > 0) && (energy_3 == 0 || isnan(energy_3))) {
+        energy_3 = 0;
+        energy3ph = (energy + energy_2 + energy_3);
+     }
+      if ((energy > 0) && (energy_2 == 0 || isnan(energy_2)) && (energy_3 == 0 || isnan(energy_3))) {
+        energy3ph = energy;
+     }
+     if ((energy == 0 || isnan(energy)) && (energy_2 > 0) && (energy_3 == 0 || isnan(energy_3))) {
+        energy3ph = energy_2;
+     }
+     if ((energy == 0 || isnan(energy)) && (energy_2 == 0 || isnan(energy_2)) && (energy_3 > 0)) {
+        energy3ph = energy_3;
+     }
+     if ((energy == 0 || isnan(energy)) && (energy_2 == 0 || isnan(energy_2)) && (energy_3 == 0 || isnan(energy_3))) {
+        energy3ph = 0;
+     }
+  }
+  // energy3ph = (energy + energy_2 + energy_3);
+  if ((va > 0) && (va_2 > 0) && (va_3 > 0)) {
+    va3ph = (va + va_2 + va_3);
+  } else {
+      if ((va == 0 || isnan(va)) && (va_2 > 0) && (va_3 > 0)) {
+        va = 0;
+        va3ph = (va + va_2 + va_3);
+     }
+      if ((va > 0) && (va_2 == 0 || isnan(va_2)) && (va_3 > 0)) {
+        va_2 = 0;
+        va3ph = (va + va_2 + va_3);
+     }
+      if ((va > 0) && (va_2 > 0) && (va_3 == 0 || isnan(va_3))) {
+        va_3 = 0;
+        va3ph = (va + va_2 + va_3);
+     }
+      if ((va > 0) && (va_2 == 0 || isnan(va_2)) && (va_3 == 0 || isnan(va_3))) {
+        va3ph = va;
+     }
+     if ((va == 0 || isnan(va)) && (va_2 > 0) && (va_3 == 0 || isnan(va_3))) {
+        va3ph = va_2;
+     }
+     if ((va == 0 || isnan(va)) && (va_2 == 0 || isnan(va_2)) && (va_3 > 0)) {
+        va3ph = va_3;
+     }
+     if ((va == 0 || isnan(va)) && (va_2 == 0 || isnan(va_2)) && (va_3 == 0 || isnan(va_3))) {
+        va3ph = 0;
+     }
+  }
+  // va3ph = (va + va_2 + va_3);
+  if ((var > 0) && (var_2 > 0) && (var_3 > 0)) {
+    var3ph = (var + var_2 + var_3);
+  } else {
+      if ((var == 0 || isnan(var)) && (var_2 > 0) && (var_3 > 0)) {
+        var = 0;
+        var3ph = (var + var_2 + var_3);
+     }
+      if ((var > 0) && (var_2 == 0 || isnan(var_2)) && (var_3 > 0)) {
+        var_2 = 0;
+        var3ph = (var + var_2 + var_3);
+     }
+      if ((var > 0) && (var_2 > 0) && (var_3 == 0 || isnan(var_3))) {
+        var_3 = 0;
+        var3ph = (var + var_2 + var_3);
+     }
+      if ((var > 0) && (var_2 == 0 || isnan(var_2)) && (var_3 == 0 || isnan(var_3))) {
+        var3ph = var;
+     }
+     if ((var == 0 || isnan(var)) && (var_2 > 0) && (var_3 == 0 || isnan(var_3))) {
+        var3ph = var_2;
+     }
+     if ((var == 0 || isnan(var)) && (var_2 == 0 || isnan(var_2)) && (var_3 > 0)) {
+        var3ph = var_3;
+     }
+     if ((var == 0 || isnan(var)) && (var_2 == 0 || isnan(var_2)) && (var_3 == 0 || isnan(var_3))) {
+        var3ph = 0;
+     }
+  }
+  // var3ph = (var + var_2 + var_3);
+
+  if ((frequency > 0) && (frequency_2 > 0) && (frequency_3 > 0)) {
+  frequency3ph = 1/3 * (frequency + frequency_2 + frequency_3);
+  } else {
+    if((frequency > 0) && (frequency_2 > 0) && (frequency_3 == 0 || isnan(frequency_3))) {
+    frequency3ph = 1/2 * (frequency+frequency_2);
+    }
+    if((frequency > 0) && (frequency_2 == 0 || isnan(frequency_2)) && (frequency_3 > 0)) {
+    frequency3ph = 1/2 * (frequency+frequency_3);
+    }
+    if((frequency == 0 || isnan(frequency)) && (frequency_2 > 0) && (frequency_3 > 0)) {
+    frequency3ph = 1/2 * (frequency_2+frequency_3);
+    }
+    if((frequency > 0) && (frequency_2 == 0 || isnan(frequency_2)) && (frequency_3 == 0 || isnan(frequency_3))) {
+    frequency3ph = frequency;
+    }
+    if((frequency == 0 || isnan(frequency)) && (frequency_2 > 0) && (frequency_3 == 0 || isnan(frequency_3))) {
+    frequency3ph = frequency_2;
+    }
+    if((frequency == 0 || isnan(frequency)) && (frequency_2 == 0 || isnan(frequency_2)) && (frequency_3 > 0)) {
+    frequency3ph = frequency_3;
+    }
+    if((frequency == 0 || isnan(frequency)) && (frequency_2 == 0 || isnan(frequency_2)) && (frequency_3 == 0 || isnan(frequency_3))) {
+    frequency3ph = 0;
+    }
+  }
+
+  if ((pf > 0) && (pf_2 > 0) && (pf_3 > 0)) {
+  pf3ph = 1/3 * (pf+pf_2+pf_3);
+  } else {
+    if((pf > 0) && (pf_2 > 0) && (pf_3 == 0 || isnan(pf_3))) {
+    pf3ph = 1/2 * (pf+pf_2);
+    }
+    if((pf > 0) && (pf_2 == 0 || isnan(pf_2)) && (pf_3 > 0)) {
+    pf3ph = 1/2 * (pf+pf_3);
+    }
+    if((pf == 0 || isnan(pf)) && (pf_2 > 0) && (pf_3 > 0)) {
+    pf3ph = 1/2 * (pf_2+pf_3);
+    }
+    if((pf > 0) && (pf_2 == 0 || isnan(pf_2)) && (pf_3 == 0 || isnan(pf_3))) {
+    pf3ph = pf;
+    }
+    if((pf == 0 || isnan(pf)) && (pf_2 > 0) && (pf_3 == 0 || isnan(pf_3))) {
+    pf3ph = pf_2;
+    }
+    if((pf == 0 || isnan(pf)) && (pf_2 == 0 || isnan(pf_2)) && (pf_3 > 0)) {
+    pf3ph = pf_3;
+    }
+    if((pf == 0 || isnan(pf)) && (pf_2 == 0 || isnan(pf_2)) && (pf_3 == 0 || isnan(pf_3))) {
+    pf3ph = 0;
+    }
+  }
+  Serial.println("Sending data to ThingsBoard:");
+  // Serial.println("Voltage:", voltage);
+  Serial.print("Voltage: ");      Serial.print(voltage);      Serial.println("V");
+  Serial.print("Current: ");      Serial.print(current);      Serial.println("A");
+  Serial.print("Power: ");        Serial.print(power);        Serial.println("W");
+  Serial.print("Energy: ");       Serial.print(energy,3);     Serial.println("kWh");
+  Serial.print("Frequency: ");    Serial.print(frequency, 1); Serial.println("Hz");
+  Serial.print("PF: ");           Serial.println(pf);
+ 
+  tb.sendTelemetryFloat("Voltage_R", voltage);
+  tb.sendTelemetryFloat("Power_R", power);
+  tb.sendTelemetryFloat("Pf_R", pf);
+  tb.sendTelemetryFloat("Current_R", current);
+  tb.sendTelemetryFloat("Frekuensi_R", frequency);
+  tb.sendTelemetryFloat("Energy_R", energy);
+  tb.sendTelemetryFloat("ApparentPower_R", va);
+  tb.sendTelemetryFloat("ReactivePower_R", var);
+
+  tb.sendTelemetryFloat("Voltage_S", voltage_2);
+  tb.sendTelemetryFloat("Power_S", power_2);
+  tb.sendTelemetryFloat("Pf_S", pf_2);
+  tb.sendTelemetryFloat("Current_S", current_2);
+  tb.sendTelemetryFloat("Frekuensi_S", frequency_2);
+  tb.sendTelemetryFloat("Energy_S", energy_2);
+  tb.sendTelemetryFloat("ApparentPower_S", va_2);
+  tb.sendTelemetryFloat("ReactivePower_S", var_2);
+
+  tb.sendTelemetryFloat("Voltage_T", voltage_3);
+  tb.sendTelemetryFloat("Power_T", power_3);
+  tb.sendTelemetryFloat("Pf_T", pf_3);
+  tb.sendTelemetryFloat("Current_T", current_3);
+  tb.sendTelemetryFloat("Frekuensi_T", frequency_3);
+  tb.sendTelemetryFloat("Energy_T", energy_3);
+  tb.sendTelemetryFloat("ApparentPower_T", va_3);
+  tb.sendTelemetryFloat("ReactivePower_T", var_3);
+
+  tb.sendTelemetryFloat("Voltage_3ph", voltage3ph);
+  tb.sendTelemetryFloat("Power_3ph", power3ph);
+  tb.sendTelemetryFloat("Pf_3ph", pf3ph);
+  tb.sendTelemetryFloat("Current_3ph", current3ph);
+  tb.sendTelemetryFloat("Frekuensi_3ph", frequency3ph);
+  tb.sendTelemetryFloat("Energy_3ph", energy3ph);
+  tb.sendTelemetryFloat("ApparentPower_3ph", va3ph);
+  tb.sendTelemetryFloat("ReactivePower_3ph", var3ph);
+}
+
 void pzemMonitor(){
 
   /**
    * Fungsi untuk mendebug(menampilakan pada serial monitor) nilai-nilai yang didapatkan dari vaiabel yang diolah pada fungsi pzemRead.
    */
    
-      for(int i = 0; i < NUM_PZEMS; i++){
+      for(int i = 10; i <= 12; i++){
         // Print the Address of the PZEM
         Serial.print("PZEM ");
         Serial.print(i);
@@ -86,7 +429,7 @@ void pzemMonitor(){
         Serial.println(pzems[i].getAddress(), HEX);
         Serial.println("===================");
         
-        if ( i == 0){
+        if ( i == 10){
           voltage = pzems[i].voltage();
           current = pzems[i].current();
           power = pzems[i].power();
@@ -105,7 +448,7 @@ void pzemMonitor(){
             var = power / pf * sqrt(1-sq(pf));
           }
 
-        }else if ( i == 1){
+        }else if ( i == 11){
           voltage_2 = pzems[i].voltage();
           current_2 = pzems[i].current();
           power_2 = pzems[i].power();
@@ -124,7 +467,7 @@ void pzemMonitor(){
             var_2 = power_2 / pf_2 * sqrt(1-sq(pf_2));
           }
           
-        }else if ( i == 2) {
+        }else if ( i == 12) {
           voltage_3 = pzems[i].voltage();
           current_3 = pzems[i].current();
           power_3 = pzems[i].power();
@@ -320,36 +663,10 @@ void getAndSendData(){
   tb.sendTelemetryFloat("ApparentPower_3ph", va3ph);
   tb.sendTelemetryFloat("ReactivePower_3ph", var3ph);
 
-  // tb.sendTelemetryFloat("Voltage_2", voltage_2);
-  // tb.sendTelemetryFloat("Power_2", power_2);
-  // tb.sendTelemetryFloat("Power_Faktor_2", pf_2);
-  // tb.sendTelemetryFloat("Current_2", current_2);
-  // tb.sendTelemetryFloat("Frekuensi_2", frequency_2);
-  // tb.sendTelemetryFloat("Energy_2", energy_2);
-
 }
 
 void setup() {
   Serial.begin(115200);
-  // Set output mode for all GPIO pins
-  for(int i = 0; i < NUM_PZEMS; i++)
-    {
-
-#if defined(USE_SOFTWARE_SERIAL)
-        // Initialize the PZEMs with Software Serial
-        pzems[i] = PZEM004Tv30(pzemSWSerial, 0x01 + i);
-#elif defined(ESP32)
-        // Initialize the PZEMs with Hardware Serial2 on RX/TX pins 16 and 17
-        pzems[i] = PZEM004Tv30(PZEM_SERIAL, PZEM_RX_PIN, PZEM_TX_PIN, 0x01 + i);
-#else
-        // Initialize the PZEMs with Hardware Serial2 on the default pins
-
-        /* Hardware Serial2 is only available on certain boards.
-        *  For example the Arduino MEGA 2560
-        */
-        pzems[i] = PZEM004Tv30(PZEM_SERIAL, 0x01 + i);
-#endif
-    }
   pinMode(GPIO23, OUTPUT);
   pinMode(GPIO2, OUTPUT);
   delay(10);
@@ -369,16 +686,15 @@ void loop() {
     reconnect();
   }
 
-  if ( millis() - lastSend > 1000 ) { // Update and send only after 1 seconds
-    getAndSendData();
+  if ( millis() - lastSend > 5000 ) { // Update and send only after 1 seconds
+    // getAndSendData();
+    Read3PhasePzem();
 //    tb.loop();
     lastSend = millis();
   }
 
-  
   client.loop();
-  pzemMonitor();
-
+  // pzemMonitor();
 }
 
 // The callback for when a PUBLISH message is received from the server.
