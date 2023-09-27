@@ -263,11 +263,12 @@ void Read3PhasePzem(){
   
   voltage = pzem1.voltage();
   current = pzem1.current();
-  power = pzem1.power();
+  // power = pzem1.power();
   energy = pzem1.energy();
   frequency = pzem1.frequency();
   pf = pzem1.pf();
 
+  power = voltage * current;
   // voltage = 230;
   // current = 12;
   // power = 34;
@@ -288,10 +289,12 @@ void Read3PhasePzem(){
 
   voltage_2 = pzem2.voltage();
   current_2 = pzem2.current();
-  power_2 = pzem2.power();
+  // power_2 = pzem2.power();
   energy_2 = pzem2.energy();
   frequency_2 = pzem2.frequency();
   pf_2 = pzem2.pf();
+
+  power_2 = voltage_2 * current_2;
   
   // voltage_2 = 232;
   // current_2 = 23;
@@ -313,10 +316,12 @@ void Read3PhasePzem(){
 
   voltage_3 = pzem3.voltage();
   current_3 = pzem3.current();
-  power_3 = pzem3.power();
+  // power_3 = pzem3.power();
   energy_3 = pzem3.energy();
   frequency_3 = pzem3.frequency();
   pf_3 = pzem3.pf();
+
+  power_3 = voltage_3 * current_3;
 
   // voltage_3 = 222;
   // current_3 = 0.13;
