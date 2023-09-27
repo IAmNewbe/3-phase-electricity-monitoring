@@ -40,7 +40,7 @@ SoftwareSerial pzemSWSerial(PZEM_RX_PIN, PZEM_TX_PIN);
 #define WIFI_PASSWORD "12345678"
 
 // #define TOKEN "SG1tAxWUe3kLYLKXF0LG"
-#define TOKEN "TIGA_FASA_RISET2" //testing device
+#define TOKEN "TIGA_FASA_RISET1" //testing device
 
 #define GPIO23 23 //relay Pin 
 #define GPIO2 2
